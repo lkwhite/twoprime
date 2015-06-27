@@ -42,8 +42,8 @@ def scoreA(genome, chrom, pos, trackname, verbose = False):
                   1 - \frac{2n_i + 1}  
                            {\frac{1}{2} |\mu_l - \sigma_l| + n_i 
                             + \frac{1}{2} |\mu_r - \sigma_r| + 1}
-                   \\ 
-                   0
+                  \\ 
+                  0
                   \end{cases}
 
     Args:

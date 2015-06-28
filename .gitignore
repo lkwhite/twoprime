@@ -5,3 +5,4 @@ _test
 *.swp
 *.swo
 .snakemake
+.Rproj.user

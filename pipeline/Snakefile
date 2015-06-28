@@ -124,7 +124,8 @@ rule load_genomedata:
     output:
        'genomedata/all.genomedata'
     params:
-        trackspec = genomedata_trackspec 
+        trackspec = genomedata_trackspec,
+        job_name = 'load_genomedata'
     log:
         'logs/load_genomedata.log'
     shell:

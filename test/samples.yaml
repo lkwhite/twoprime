@@ -1,0 +1,11 @@
+---
+geo_acc:  GSE54655
+pmid:     25417815
+
+samples:
+    - id:      SRR1158613
+      descrip: Large ribosomal subunit RNA
+
+    - id:      SRR1158615
+      descrip: Small ribosomal subunit RNA
+

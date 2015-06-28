@@ -21,6 +21,9 @@ SIDES = {'5p':'-5',
 
 SCORES = ('A','B','C')
 
+FASTA = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.fa'
+BOWTIEIDX = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1'
+
 rule all:
     input: 'genomedata/all.genomedata'
 
@@ -43,14 +46,13 @@ rule align:
     output:
         'alignment/{sample}/{sample}.bam'
     params:
-        bwtindex = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1',
         id = '{sample}',
         job_name = '{sample}.align'
     threads: 8
     log: 
         'logs/align.{sample}.log'
     shell:
-        "bowtie2 --local -x {params.bwtindex} -U {input} -p {threads} "
+        "bowtie2 --local -x {BOWTIEIDX} -U {input} -p {threads} "
         "| samtools view -F4 -bhu - "
         "| samtools sort -o - alignment/{params.id}.temp -m 8G "
         "> {output} && samtools index {output}"
@@ -124,9 +126,9 @@ rule load_genomedata:
     params:
         trackspec = genomedata_trackspec 
     log:
-        'logs/load_genomedata'
+        'logs/load_genomedata.log'
     shell:
-        "genomedata-load --verbose {params.trackspec} {output}"
+        "genomedata-load --verbose -s {FASTA} {params.trackspec} {output}"
 
 
 rule make_bigwigs:

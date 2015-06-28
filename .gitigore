@@ -1,0 +1,6 @@
+*.pyc
+_build
+_test
+*.html
+*.swp
+*.swo

@@ -7,10 +7,8 @@ from datetime import date
 today = date.today().isoformat()
 workdir: 'results-twoprime/%s' % today
 
-# XXX
-# configfile: 'test/samples.yaml'
-
-SAMPLES = ('SRR1158613', 'SRR1158615')
+# default config file
+# configfile: 'test/config.yml'
 
 # STRANDS and SIDES for the coverage rules
 STRANDS = {'pos':'-strand +', 'neg':'-strand -'}
@@ -19,24 +17,26 @@ SIDES = {'5p':'-5', '3p':'-3'}
 
 SCORES = ('A','B','C')
 
-FASTA = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.fa'
-BOWTIEIDX = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1'
+FASTA = config['FASTA'] 
+BOWTIEIDX = config['BOWTIEIDX'] 
 
+localrules: download_sra
 
 rule all:
     input: 'genomedata/all.genomedata'
 
 
+# XXX borked
 rule download_sra:
     input:
-        temp('raw/{sample}.downloading')
+        'raw/download'
     output:
-        'raw/{sample}.sra'
+        expand('raw/{sample}.sra', sample = config['samples'])
     log: 
         'logs/download_sra.{sample}.log'
     params:
         job_name = '{sample}.fastq',
-        url = config['id']['url']
+        url = config['urls'] 
     shell:
         'wget -nv -o {output} {params.url}'
 
@@ -116,7 +116,7 @@ def genomedata_filespec(empty):
     filebase = 'coverage/{sample}/{sample}.combined.{strand}.bg.gz'
 
     filespec = [filebase.format(sample = sample, strand = strand)
-                for sample in SAMPLES for strand in STRANDS]
+                for sample in config['samples'] for strand in STRANDS]
 
     return filespec
 
@@ -126,7 +126,7 @@ def genomedata_trackspec(empty):
     trackbase = '{sample}.{strand}'
 
     tracknames = [trackbase.format(sample = sample, strand = strand)
-                  for sample in SAMPLES for strand in STRANDS]
+                  for sample in config['samples'] for strand in STRANDS]
 
     filenames = genomedata_filespec(empty)
 

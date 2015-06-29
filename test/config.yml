@@ -1,0 +1,23 @@
+geo_acc:  GSE54655
+pmid:     25417815
+descrip:  Samples from RiboMeth-seq study
+
+samples:
+    - SRR1158613
+    - SRR1158615
+    - SRR1158616
+
+descriptions: 
+    - Large ribosomal subunit RNA
+    - Small ribosomal subunit RNA
+    - carries a plasmid encoded artificial snoRNA targeting LSU-U2954
+
+urls:
+    - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX%2FSRX462%2FSRX462597/SRR1158613/SRR1158613.sra
+    - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX%2FSRX462%2FSRX462598/SRR1158615/SRR1158615.sra
+    - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX%2FSRX462%2FSRX462599/SRR1158616/SRR1158616.sra
+
+FASTA: '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.fa'
+BOWTIEIDX: '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1'
+
+# vim tw=150

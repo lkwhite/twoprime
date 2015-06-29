@@ -6,3 +6,4 @@ _test
 *.swo
 .snakemake
 .Rproj.user
+results-*/

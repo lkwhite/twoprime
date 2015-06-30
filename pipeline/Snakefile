@@ -25,13 +25,9 @@ localrules: download_sra
 rule all:
     input: 'genomedata/all.genomedata'
 
-
-# XXX borked
 rule download_sra:
-    input:
-        'raw/download'
     output:
-        expand('raw/{sample}.sra', sample = config['samples'])
+       'raw/{sample}.sra'
     log: 
         'logs/download_sra.{sample}.log'
     params:

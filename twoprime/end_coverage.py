@@ -51,7 +51,7 @@ def end_coverage(bamfilename, strand, end, verbose = False):
             # the sequencing read length.
             
     # setup bedtool arguments for end and strand
-    bedtool_args = {bg:True, strand:strand}
+    bedtool_args = {'bg':True, 'strand':strand}
 
     if end == '5':
         bedtools_args['5':True]

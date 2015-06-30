@@ -138,3 +138,4 @@ rule make_bigwigs:
     output:
         '{sample}.{strand}.score{score}.bw'
 
+# vim: set syntax=python

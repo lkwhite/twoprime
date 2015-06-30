@@ -7,30 +7,39 @@ from datetime import date
 today = date.today().isoformat()
 workdir: 'results-twoprime/%s' % today
 
-# XXX
-# configfile: 'test/samples.yaml'
-
-SAMPLES = ('SRR1158613', 'SRR1158615')
+# default config file
+# configfile: 'test/config.yml'
 
 # STRANDS and SIDES for the coverage rules
-STRANDS = {'pos':'-strand +',
-           'neg':'-strand -'}
+STRANDS = {'pos':'-strand +', 'neg':'-strand -'}
 
-SIDES = {'5p':'-5',
-         '3p':'-3'}
+SIDES = {'5p':'-5', '3p':'-3'}
 
 SCORES = ('A','B','C')
 
-FASTA = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.fa'
-BOWTIEIDX = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1'
+FASTA = config['FASTA'] 
+BOWTIEIDX = config['BOWTIEIDX'] 
+
+localrules: download_sra
 
 rule all:
     input: 'genomedata/all.genomedata'
 
+rule download_sra:
+    output:
+       'raw/{sample}.sra'
+    log: 
+        'logs/download_sra.{sample}.log'
+    params:
+        job_name = '{sample}.fastq',
+        url = config['urls'] 
+    shell:
+        'wget -nv -o {output} {params.url}'
+
+
 rule sra_to_fastq:
     input:
-        # XXX: update
-        '/vol3/home/jhessel/devel/twoprime/test/{sample}.sra'
+        'raw/{sample}.sra'
     output:
         'raw/{sample}.fastq.gz'
     log: 
@@ -39,6 +48,7 @@ rule sra_to_fastq:
         job_name = '{sample}.fastq'
     shell:
         'fastq-dump --gzip -O raw {input}'
+
 
 rule align:
     input:
@@ -56,6 +66,7 @@ rule align:
         "| samtools view -F4 -bhu - "
         "| samtools sort -o - alignment/{params.id}.temp -m 8G "
         "> {output} && samtools index {output}"
+
 
 rule end_coverage:
     input:
@@ -75,11 +86,13 @@ rule end_coverage:
         "{params.strand_arg} {params.side_arg} "
         "| gzip -c > {output}"
 
+
 def merge_coverage_input(wildcards):
     filebase = 'coverage/{sample}/{sample}.{side}.{strand}.bg.gz'
     return [filebase.format(sample = wildcards.sample,
                             strand = wildcards.strand,
                             side = side) for side in SIDES]
+
 
 rule merge_coverage:
     input: merge_coverage_input
@@ -99,7 +112,7 @@ def genomedata_filespec(empty):
     filebase = 'coverage/{sample}/{sample}.combined.{strand}.bg.gz'
 
     filespec = [filebase.format(sample = sample, strand = strand)
-                for sample in SAMPLES for strand in STRANDS]
+                for sample in config['samples'] for strand in STRANDS]
 
     return filespec
 
@@ -109,7 +122,7 @@ def genomedata_trackspec(empty):
     trackbase = '{sample}.{strand}'
 
     tracknames = [trackbase.format(sample = sample, strand = strand)
-                  for sample in SAMPLES for strand in STRANDS]
+                  for sample in config['samples'] for strand in STRANDS]
 
     filenames = genomedata_filespec(empty)
 

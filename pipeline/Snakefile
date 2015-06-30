@@ -34,7 +34,7 @@ rule download_sra:
         job_name = '{sample}.fastq',
         url = config['urls'] 
     shell:
-        'wget -nv -o {output} {params.url}'
+        'wget -nv -o {log} -O {output} {params.url}'
 
 
 rule sra_to_fastq:

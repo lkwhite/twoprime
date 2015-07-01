@@ -23,10 +23,9 @@ source $VIM/syntax/python.vim
 "
 " Snakemake rules, as of version 3.3
 "
-" XXX need to add onsuccess, onerror, benchmake, snakefile, localrules
-" to this table
-
-" snakemake  = statement | rule | include | workdir
+" XXX N.B. several of the new defs are missing from this table i.e.
+" subworkflow, touch etc
+"
 " rule       = "rule" (identifier | "") ":" ruleparams
 " include    = "include:" stringliteral
 " workdir    = "workdir:" stringliteral
@@ -42,7 +41,9 @@ source $VIM/syntax/python.vim
 " run        = "run" ":" ni statement
 " shell      = "shell" ":" stringliteral
 
-syn keyword pythonStatement	include workdir localrules onsuccess onerror
+syn keyword pythonStatement	include workdir onsuccess onerror
+syn keyword pythonStatement	ruleorder localrules
+syn keyword pythonStatement	touch protected temp
 syn keyword pythonStatement	input output params message threads resources
 syn keyword pythonStatement	version run shell benchmark snakefile log
 syn keyword pythonStatement	rule subworkflow nextgroup=pythonFunction skipwhite

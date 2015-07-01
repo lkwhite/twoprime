@@ -1,7 +1,9 @@
 " Vim syntax file
-" Language:	Python (snakemake variant)
+" Language:	Snakemake (extended from python.vim)
 " Maintainer:	Jay Hesselberth (jay.hesselberth@gmail.com)
 " Last Change:	2015 Jul 1 
+"
+" Usage
 "
 " copy to $HOME/.vim/syntax directory and add:
 "
@@ -14,15 +16,16 @@
 "
 " :set syntax=snakemake
 "
+
 " load settings from system python.vim (7.4)
-source python.vim
+source $VIM/syntax/python.vim
 
 "
 " Snakemake rules, as of version 3.3
 "
 " XXX need to add onsuccess, onerror, benchmake, snakefile, localrules
-"     to this table
-"
+" to this table
+
 " snakemake  = statement | rule | include | workdir
 " rule       = "rule" (identifier | "") ":" ruleparams
 " include    = "include:" stringliteral
@@ -41,7 +44,7 @@ source python.vim
 
 syn keyword pythonStatement	include workdir localrules onsuccess onerror
 syn keyword pythonStatement	input output params message threads resources
-syn keyword pythonStatement	version run shell benchmark snakefile
+syn keyword pythonStatement	version run shell benchmark snakefile log
 syn keyword pythonStatement	rule subworkflow nextgroup=pythonFunction skipwhite
 
 " original from python.vim

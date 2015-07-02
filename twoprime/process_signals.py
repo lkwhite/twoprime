@@ -20,7 +20,7 @@ from .signal_scores import scoreA, scoreB, scoreC
 __all__ = ['process_signals']
 
 
-def process_signals(genome, trackname, score_type, verbose = False):
+def process_signals(gdarchive, trackname, score_type, verbose = False):
     '''
     Process signals from a genomedata archive.
 
@@ -36,12 +36,16 @@ def process_signals(genome, trackname, score_type, verbose = False):
 
     score_func = _score_func(score_type)
 
-    for chrom in genome:
-        for pos in chrom:
-            
-            score = score_func(genome, chrom, pos, trackname, verbose)
-            fields = (chrom, pos, pos + 1, score)
-            print(map(str, fields), sep='\t')
+    with Genome(gdarchive) as genome:
+
+        for chrom in genome:
+            for contig, continuous in chrom.itercontinuous():
+               
+                import pdb; pdb.set_trace()
+
+                score = score_func(genome, chrom, pos, trackname, verbose)
+                fields = (chrom, pos, pos + 1, score)
+                print(map(str, fields), sep='\t')
 
 def _score_func(score_type):
     ''' determine scoring function'''
@@ -64,7 +68,9 @@ def parse_args(args):
 
     parser.add_argument('gdarchive', help='genomedata archive')
 
-    parser.add_argument('--score', choices=['A','B','C'], default='A',
+    parser.add_argument('--trackname', help="track name")
+
+    parser.add_argument('--score-type', choices=['A','B','C'], default='A',
             help="scoring function")
 
     parser.add_argument('--verbose', action='store_true',
@@ -78,7 +84,8 @@ def main(args=sys.argv[1:]):
 
     args = parse_args(args)
 
-    kwargs = {'score':args.score,
+    kwargs = {'trackname':args.trackname,
+              'score_type':args.score_type,
               'verbose':args.verbose}
 
     return process_signals(args.gdarchive, **kwargs)

@@ -12,16 +12,16 @@ scores based on RiboMeth-seq supplementary info described in
 '''
 
 __author__ = 'Jay Hesselberth <jay.hesselberth@gmail.com>'
+__license__ = 'MIT'
 
-from numpy import mean, std
+from numpy import nanmean, nanstd, nansum
 
-# default from paper
+# default from Birkedal et al. paper
 FLANK_SIZE = 6
 
 # weights used by scoreB and scoreC, listed in order from left to right
-WEIGHTS = (0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0)
+WEIGHTS = (0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.0)
 
-# XXX: not quite right
 SUM_SCALES = sum(WEIGHTS[abs(i)]
                  for i in range(-FLANK_SIZE, FLANK_SIZE + 1))
 
@@ -61,12 +61,12 @@ def scoreA(genome, chrom, pos, trackname, verbose = False):
     l_data = genome[chrom][pos-FLANK_SIZE:pos, trackname]
     r_data = genome[chrom][pos:pos+FLANK_SIZE, trackname]
 
-    mean_l = mean(l_data)
-    std_l = std(l_data)
-    mean_r = mean(r_data)
-    std_r = std(r_data)
+    mean_l = nanmean(l_data)
+    std_l = nanstd(l_data)
+    mean_r = nanmean(r_data)
+    std_r = nanstd(r_data)
 
-    score_numer = 2 * n_i + 1
+    score_numer = 2.0 * n_i + 1.0
     score_denom = 0.5 * abs(mean_l - std_l) + \
                   n_i + \
                   0.5 * abs(mean_r - std_r) + \
@@ -93,8 +93,8 @@ def _calc_flanks(genome, chrom, pos, trackname):
     l_data = genome[chrom][pos-FLANK_SIZE:pos, trackname]
     r_data = genome[chrom][pos:pos+FLANK_SIZE, trackname]
 
-    scaled_l_flank = sum(x * y for x, y in zip(l_data, weights))
-    scaled_r_flank = sum(x * y for x, y in zip(l_data, reversed(weights)))
+    scaled_l_flank = nansum(x * y for x, y in zip(l_data, weights))
+    scaled_r_flank = nansum(x * y for x, y in zip(l_data, reversed(weights)))
 
     return (scaled_l_flank, scaled_r_flank)
 
@@ -135,7 +135,7 @@ def scoreB(genome, chrom, pos, trackname, verbose = False):
 
     score_numer = abs(n_i - 0.5 * (scaled_l_flank / SUM_SCALES) + \
                                   (scaled_r_flank / SUM_SCALES))
-    score_denom = n_i + 1
+    score_denom = n_i + 1.0
    
     score = score_numer / score_denom
 

@@ -19,7 +19,6 @@ import sys
 from gzip import open as gzip_open
 from functools import partial
 from collections import defaultdict, Counter
-from itertools import product 
 
 from path import path
 from pysam import Samfile

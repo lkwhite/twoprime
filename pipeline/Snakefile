@@ -1,29 +1,34 @@
-# Snakefile for twoprime analysis
+
+'''Snakefile for twoprime analysis'''
 
 __author__ = 'Jay Hesselberth <jay.hesselberth@gmail.com>'
 
-# XXX: can specify alternative with `-d`
 from datetime import date
 today = date.today().isoformat()
 workdir: 'results-twoprime/%s' % today
 
 # default config file
-# configfile: 'test/config.yml'
+configfile: 'test/config.yml'
+
+include: 'rules/coverage.snake'
+include: 'rules/genomedata.snake'
 
 # STRANDS and SIDES for the coverage rules
 STRANDS = {'pos':'-strand +', 'neg':'-strand -'}
-
 SIDES = {'5p':'-5', '3p':'-3'}
-
 SCORES = ('A','B','C')
 
 FASTA = config['FASTA'] 
 BOWTIEIDX = config['BOWTIEIDX'] 
 
-localrules: download_sra
+# localrules: download_sra
 
 rule all:
     input: 'genomedata/all.genomedata'
+
+#rule clean:
+#    input: workdir
+#    shell: 'rm -rf {input}'
 
 rule download_sra:
     output:
@@ -56,7 +61,7 @@ rule align:
     output:
         'alignment/{sample}/{sample}.bam'
     params:
-        id = '{sample}',
+        sample = '{sample}',
         job_name = '{sample}.align'
     threads: 8
     log: 
@@ -64,85 +69,8 @@ rule align:
     shell:
         "bowtie2 --local -x {BOWTIEIDX} -U {input} -p {threads} "
         "| samtools view -F4 -bhu - "
-        "| samtools sort -o - alignment/{params.id}.temp -m 8G "
+        "| samtools sort -o - alignment/{params.sample}.temp -m 8G "
         "> {output} && samtools index {output}"
-
-
-rule end_coverage:
-    input:
-        'alignment/{sample}/{sample}.bam'
-    output:
-        'coverage/{sample}/{sample}.{side}.{strand}.bg.gz'
-    params:
-        chromsize = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.chrom.sizes',
-        side_arg = lambda wildcards: SIDES[wildcards.side],
-        strand_arg = lambda wildcards: STRANDS[wildcards.strand],
-        job_name = '{sample}.{side}.{strand}.coverage',
-        doc = "determine coverage of 5p and 3p ends, for each strand"
-    log: 
-        'logs/coverage.{sample}.log'
-    shell:
-        "bedtools genomecov -ibam {input} -g {params.chromsize} -bg "
-        "{params.strand_arg} {params.side_arg} "
-        "| gzip -c > {output}"
-
-
-def merge_coverage_input(wildcards):
-    filebase = 'coverage/{sample}/{sample}.{side}.{strand}.bg.gz'
-    return [filebase.format(sample = wildcards.sample,
-                            strand = wildcards.strand,
-                            side = side) for side in SIDES]
-
-
-rule merge_coverage:
-    input: merge_coverage_input
-    output:
-        'coverage/{sample}/{sample}.combined.{strand}.bg.gz'
-    params:
-        job_name = '{sample}.{strand}.merge_coverage',
-        doc = "combine coverage of ends into a merged bedgraph file"
-    shell:
-        "bedtools unionbedg -i {input} "
-        "| awk '{{print $1, $2, $3, $4 + $5}}' "
-        "| gzip -c > {output}"
-
-
-def genomedata_filespec(empty):
-    ''' generate a filename spec for genomedata-load '''
-    filebase = 'coverage/{sample}/{sample}.combined.{strand}.bg.gz'
-
-    filespec = [filebase.format(sample = sample, strand = strand)
-                for sample in config['samples'] for strand in STRANDS]
-
-    return filespec
-
-
-def genomedata_trackspec(empty):
-    ''' generate a trackname spec for genomedata-load '''
-    trackbase = '{sample}.{strand}'
-
-    tracknames = [trackbase.format(sample = sample, strand = strand)
-                  for sample in config['samples'] for strand in STRANDS]
-
-    filenames = genomedata_filespec(empty)
-
-    trackspec = ['-t %s=%s ' % (trackname, filename)
-                 for trackname, filename in zip(tracknames, filenames)]
-                                
-    return trackspec
-
-
-rule load_genomedata:
-    input: genomedata_filespec
-    output:
-       'genomedata/all.genomedata'
-    params:
-        trackspec = genomedata_trackspec,
-        job_name = 'load_genomedata'
-    log:
-        'logs/load_genomedata.log'
-    shell:
-        "genomedata-load --verbose -s {FASTA} {params.trackspec} {output}"
 
 
 rule make_bigwigs:

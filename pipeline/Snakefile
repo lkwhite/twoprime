@@ -10,6 +10,7 @@ workdir: 'results-twoprime/%s' % today
 # default config file
 configfile: 'test/config.yml'
 
+include: 'rules/fastq.snake'
 include: 'rules/coverage.snake'
 include: 'rules/genomedata.snake'
 
@@ -21,61 +22,10 @@ SCORES = ('A','B','C')
 FASTA = config['FASTA'] 
 BOWTIEIDX = config['BOWTIEIDX'] 
 
-# localrules: download_sra
-
 rule all:
     input: 'genomedata/all.genomedata'
 
 #rule clean:
 #    input: workdir
 #    shell: 'rm -rf {input}'
-
-rule download_sra:
-    output:
-       'raw/{sample}.sra'
-    log: 
-        'logs/download_sra.{sample}.log'
-    params:
-        job_name = '{sample}.fastq',
-        url = config['urls'] 
-    shell:
-        'wget -nv -o {log} -O {output} {params.url}'
-
-
-rule sra_to_fastq:
-    input:
-        'raw/{sample}.sra'
-    output:
-        'raw/{sample}.fastq.gz'
-    log: 
-        'logs/fastq.{sample}.log'
-    params:
-        job_name = '{sample}.fastq'
-    shell:
-        'fastq-dump --gzip -O raw {input}'
-
-
-rule align:
-    input:
-        'raw/{sample}.fastq.gz'
-    output:
-        'alignment/{sample}/{sample}.bam'
-    params:
-        sample = '{sample}',
-        job_name = '{sample}.align'
-    threads: 8
-    log: 
-        'logs/align.{sample}.log'
-    shell:
-        "bowtie2 --local -x {BOWTIEIDX} -U {input} -p {threads} "
-        "| samtools view -F4 -bhu - "
-        "| samtools sort -o - alignment/{params.sample}.temp -m 8G "
-        "> {output} && samtools index {output}"
-
-
-rule make_bigwigs:
-    input:
-        'coverage/{sample}.{strand}.combined.bg.gz'
-    output:
-        'coverage/{sample}.{strand}.score{score}.bw'
 

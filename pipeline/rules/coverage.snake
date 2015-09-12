@@ -1,10 +1,29 @@
 
-''' coverage rules '''
+''' rules for alignment and coverage generation '''
+
 #def scale_factor(wildcards):
 #    ''' parse the alignment log to get the number aligned reads '''
 #    align_log = 'logs/align.%s.log.err' % wildcards['sample']
 #    with open(align_log) as logfile:
 #        print 'blah'
+
+rule align:
+    input:
+        'raw/{sample}.fastq.gz'
+    output:
+        'alignment/{sample}/{sample}.bam'
+    params:
+        sample = '{sample}',
+        job_name = '{sample}.align'
+    threads: 8
+    log: 
+        'logs/align.{sample}.log'
+    shell:
+        "bowtie2 --local -x {BOWTIEIDX} -U {input} -p {threads} "
+        "| samtools view -F4 -bhu - "
+        "| samtools sort -o - alignment/{params.sample}.temp -m 8G "
+        "> {output} && samtools index {output}"
+
 
 rule end_coverage:
     input:
@@ -24,6 +43,17 @@ rule end_coverage:
         "bedtools genomecov -ibam {input} -g {params.chromsize} -bg "
         "{params.strand_arg} {params.side_arg} "
         "| gzip -c > {output}"
+
+
+rule make_bigwigs:
+    input:
+        'coverage/{sample}.{strand}.combined.bg.gz'
+    output:
+        'coverage/{sample}.{strand}.score{score}.bw'
+    params:
+        chromsize = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.chrom.sizes',
+    shell:
+        "bedGraphToBigWig {input} {params.chromsize} {output}"
 
 
 def merge_coverage_input(wildcards):

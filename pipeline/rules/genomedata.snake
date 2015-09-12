@@ -1,0 +1,39 @@
+
+def genomedata_filespec(empty):
+    ''' generate a filename spec for genomedata-load '''
+    filebase = 'coverage/{sample}/{sample}.combined.{strand}.bg.gz'
+
+    filespec = [filebase.format(sample = sample, strand = strand)
+                for sample in config['samples'] for strand in STRANDS]
+
+    return filespec
+
+
+def genomedata_trackspec(empty):
+    ''' generate a trackname spec for genomedata-load '''
+    trackbase = '{sample}.{strand}'
+
+    tracknames = [trackbase.format(sample = sample, strand = strand)
+                  for sample in config['samples'] for strand in STRANDS]
+
+    filenames = genomedata_filespec(empty)
+
+    trackspec = ['-t %s=%s ' % (trackname, filename)
+                 for trackname, filename in zip(tracknames, filenames)]
+                                
+    return trackspec
+
+
+rule load_genomedata:
+    input: genomedata_filespec
+    output:
+       'genomedata/all.genomedata'
+    params:
+        trackspec = genomedata_trackspec,
+        job_name = 'load_genomedata'
+    log:
+        'logs/load_genomedata.log'
+    shell:
+        "genomedata-load --verbose -s {FASTA} {params.trackspec} {output}"
+
+

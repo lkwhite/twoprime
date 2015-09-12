@@ -1,0 +1,22 @@
+
+rule genomes_file:
+    output:
+        'hub/genomes.txt'
+
+rule hub_file:
+    output:
+        'hub/hub.txt'
+
+rule make_signals:
+    output:
+        'hub/signals/trackDb.txt'
+
+rule make_scores:
+    output:
+        'hub/scores/trackDb.txt'
+
+rule check_hub:
+    output:
+        'hub/hubCheck.txt'
+    shell:
+        'hubCheck -verbose=2 {params.url}

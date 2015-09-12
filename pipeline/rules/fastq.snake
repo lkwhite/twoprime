@@ -1,0 +1,31 @@
+
+''' rules to download and process SRA files '''
+
+# XXX uncomment for download jobs to run on head node 
+# localrules: download_sra
+
+rule download_sra:
+    output:
+       'raw/{sample}.sra'
+    log: 
+        'logs/download_sra.{sample}.log'
+    params:
+        job_name = '{sample}.fastq',
+        url = config['urls'] 
+    shell:
+        'wget -nv -o {log} -O {output} {params.url}'
+
+
+rule sra_to_fastq:
+    input:
+        'raw/{sample}.sra'
+    output:
+        'raw/{sample}.fastq.gz'
+    log: 
+        'logs/fastq.{sample}.log'
+    params:
+        job_name = '{sample}.fastq'
+    shell:
+        'fastq-dump --gzip -O raw {input}'
+
+

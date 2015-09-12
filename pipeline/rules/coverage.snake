@@ -1,0 +1,79 @@
+
+''' rules for alignment and coverage generation '''
+
+#def scale_factor(wildcards):
+#    ''' parse the alignment log to get the number aligned reads '''
+#    align_log = 'logs/align.%s.log.err' % wildcards['sample']
+#    with open(align_log) as logfile:
+#        print 'blah'
+
+rule align:
+    input:
+        'raw/{sample}.fastq.gz'
+    output:
+        'alignment/{sample}/{sample}.bam'
+    params:
+        sample = '{sample}',
+        job_name = '{sample}.align'
+    threads: 8
+    log: 
+        'logs/align.{sample}.log'
+    shell:
+        "bowtie2 --local -x {BOWTIEIDX} -U {input} -p {threads} "
+        "| samtools view -F4 -bhu - "
+        "| samtools sort -o - alignment/{params.sample}.temp -m 8G "
+        "> {output} && samtools index {output}"
+
+
+rule end_coverage:
+    input:
+        'alignment/{sample}/{sample}.bam'
+    output:
+        'coverage/{sample}/{sample}.{side}.{strand}.bg.gz'
+    params:
+        chromsize = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.chrom.sizes',
+        side_arg = lambda wildcards: SIDES[wildcards.side],
+        strand_arg = lambda wildcards: STRANDS[wildcards.strand],
+        job_name = '{sample}.{side}.{strand}.coverage',
+#         scale = scale_factor,
+        doc = "determine coverage of 5p and 3p ends, for each strand"
+    log: 
+        'logs/coverage.{sample}.log'
+    shell:
+        "bedtools genomecov -ibam {input} -g {params.chromsize} -bg "
+        "{params.strand_arg} {params.side_arg} "
+        "| gzip -c > {output}"
+
+
+rule make_bigwigs:
+    input:
+        'coverage/{sample}.{strand}.combined.bg.gz'
+    output:
+        'coverage/{sample}.{strand}.score{score}.bw'
+    params:
+        chromsize = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.chrom.sizes',
+    shell:
+        "bedGraphToBigWig {input} {params.chromsize} {output}"
+
+
+def merge_coverage_input(wildcards):
+    filebase = 'coverage/{sample}/{sample}.{side}.{strand}.bg.gz'
+    return [filebase.format(sample = wildcards.sample,
+                            strand = wildcards.strand,
+                            side = side) for side in SIDES]
+
+
+rule merge_coverage:
+    input: merge_coverage_input
+    output:
+        'coverage/{sample}/{sample}.combined.{strand}.bg.gz'
+    params:
+        job_name = '{sample}.{strand}.merge_coverage',
+        doc = "combine coverage of ends into a merged bedgraph file"
+    shell:
+        "bedtools unionbedg -i {input} "
+        "| awk '{{print $1, $2, $3, $4 + $5}}' "
+        "| gzip -c > {output}"
+
+
+

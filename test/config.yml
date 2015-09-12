@@ -19,5 +19,6 @@ urls:
 
 FASTA: '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.fa'
 BOWTIEIDX: '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1'
+CHROMSIZE: '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.chrom/sizes'
 
 # vim tw=150

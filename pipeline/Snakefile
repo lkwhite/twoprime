@@ -8,7 +8,10 @@ today = date.today().isoformat()
 workdir: 'results-twoprime/%s' % today
 
 # default config file
-configfile: 'test/config.yml'
+# configfile: 'test/config.yml'
+
+rule all:
+    input: 'genomedata/all.genomedata'
 
 include: 'rules/fastq.snake'
 include: 'rules/coverage.snake'
@@ -21,9 +24,6 @@ SCORES = ('A','B','C')
 
 FASTA = config['FASTA'] 
 BOWTIEIDX = config['BOWTIEIDX'] 
-
-rule all:
-    input: 'genomedata/all.genomedata'
 
 #rule clean:
 #    input: workdir

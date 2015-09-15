@@ -14,7 +14,7 @@ scores based on RiboMeth-seq supplementary info described in
 __author__ = 'Jay Hesselberth <jay.hesselberth@gmail.com>'
 __license__ = 'MIT'
 
-from numpy import nanmean, nanstd, nansum
+from numpy import nanmean, nanstd, nansum, nan_to_num, isnan
 
 # default from Birkedal et al. paper
 FLANK_SIZE = 6
@@ -28,7 +28,7 @@ SUM_SCALES = sum(WEIGHTS[abs(i)]
 __all__ = ['scoreA', 'scoreB', 'scoreC']
 
 
-def scoreA(gdarchive, chrom, pos, trackname, verbose = False):
+def scoreA(chrom, pos, trackname, verbose = False):
     '''
     "Score A is used for detection of ribose methylated positions and is
     based on both the average and standard deviation of the neighboring
@@ -47,8 +47,7 @@ def scoreA(gdarchive, chrom, pos, trackname, verbose = False):
                   \end{cases}
 
     Args:
-        gdarchive (genomedata.Genome): genomedata archive
-        chrom (str): chromosome in genomedata
+        chrom (genomedata.Chromosome): specified chromosome 
         pos (int): queried postition
         trackname (str): name of signal track
         verbose (Optional[bool]): maximum verbosity
@@ -56,15 +55,18 @@ def scoreA(gdarchive, chrom, pos, trackname, verbose = False):
     Returns:
         float: calculated score or 0.0, whichever is greater
     '''
-    n_i = gdarchive[chrom][pos]
 
-    l_data = gdarchive[chrom][pos-FLANK_SIZE:pos, trackname]
-    r_data = gdarchive[chrom][pos:pos+FLANK_SIZE, trackname]
+    if pos - FLANK_SIZE < 0: return None
 
-    mean_l = nanmean(l_data)
-    std_l = nanstd(l_data)
-    mean_r = nanmean(r_data)
-    std_r = nanstd(r_data)
+    n_i = chrom[pos, trackname]
+
+    l_data = chrom[pos-FLANK_SIZE:pos, trackname]
+    r_data = chrom[pos:pos+FLANK_SIZE, trackname]
+
+    mean_l = nan_to_num(nanmean(l_data))
+    std_l = nan_to_num(nanstd(l_data))
+    mean_r = nan_to_num(nanmean(r_data))
+    std_r = nan_to_num(nanstd(r_data))
 
     score_numer = 2.0 * n_i + 1.0
     score_denom = 0.5 * abs(mean_l - std_l) + \
@@ -76,13 +78,13 @@ def scoreA(gdarchive, chrom, pos, trackname, verbose = False):
 
     return max(score, 0.0)
 
-def _calc_flanks(gdarchive, chrom, pos, trackname):
+
+def _calc_flanks(chrom, pos, trackname):
     '''
     calculate scaled flanks for scoreB and scoreC.
 
     Args:
-        gdarchive (genomedata.Genome): genomedata archive
-        chrom (str): chromosome in genomedata
+        chrom (genomedata.Chromosome): specified chromosome 
         pos (int): queried postition
         trackname (str): name of signal track
 
@@ -90,16 +92,18 @@ def _calc_flanks(gdarchive, chrom, pos, trackname):
         tuple of floats: scaled left and right flanks
     '''
 
-    l_data = gdarchive[chrom][pos-FLANK_SIZE:pos, trackname]
-    r_data = gdarchive[chrom][pos:pos+FLANK_SIZE, trackname]
+    if pos - FLANK_SIZE < 0: return (0.0, 0.0)
 
-    scaled_l_flank = nansum(x * y for x, y in zip(l_data, weights))
-    scaled_r_flank = nansum(x * y for x, y in zip(l_data, reversed(weights)))
+    l_data = chrom[pos-FLANK_SIZE:pos, trackname]
+    r_data = chrom[pos:pos+FLANK_SIZE, trackname]
+
+    scaled_l_flank = nansum([x * y for x, y in zip(l_data, WEIGHTS)])
+    scaled_r_flank = nansum([x * y for x, y in zip(r_data, reversed(WEIGHTS))])
 
     return (scaled_l_flank, scaled_r_flank)
 
 
-def scoreB(gdarchive, chrom, pos, trackname, verbose = False):
+def scoreB(chrom, pos, trackname, verbose = False):
     '''
     "Score B is based on the weighted average of neighboring positions. It
     has a very high signal to noise ratio and is used for inspection of
@@ -119,8 +123,7 @@ def scoreB(gdarchive, chrom, pos, trackname, verbose = False):
                    {n_i + 1}
 
     Args:
-        gdarchive (genomedata.Genome): genomedata archive
-        chrom (str): chromosome in genomedata
+        chrom (genomedata.Chromosome): specific chromosome 
         pos (int): queried postition
         trackname (str): name of signal track
         verbose (Optional[bool]): maximum verbosity
@@ -129,9 +132,9 @@ def scoreB(gdarchive, chrom, pos, trackname, verbose = False):
         float: calculated score
     '''
 
-    scaled_l_flank, scaled_r_flank = _calc_flanks(gdarchive, chrom, pos, trackname)
+    scaled_l_flank, scaled_r_flank = _calc_flanks(chrom, pos, trackname)
 
-    n_i = gdarchive[chrom][pos, trackname]
+    n_i = chrom[pos, trackname]
 
     score_numer = abs(n_i - 0.5 * (scaled_l_flank / SUM_SCALES) + \
                                   (scaled_r_flank / SUM_SCALES))
@@ -142,7 +145,7 @@ def scoreB(gdarchive, chrom, pos, trackname, verbose = False):
     return score
 
 
-def scoreC(gdarchive, chrom, pos, trackname, verbose = False):
+def scoreC(chrom, pos, trackname, verbose = False):
     '''
     "Score C is a normalized version of score B and expresses the percent
     methylation at a given position using the flanking positions to estimate
@@ -166,8 +169,7 @@ def scoreC(gdarchive, chrom, pos, trackname, verbose = False):
                   \end{cases}
 
     Args:
-        gdarchive (genomedata.Genome): genomedata archive
-        chrom (str): chromosome in genomedata
+        chrom (genomeata.Chromosome): specified chromosome 
         pos (int): queried postition
         trackname (str): name of signal track
         verbose (Optional[bool]): maximum verbosity
@@ -176,11 +178,11 @@ def scoreC(gdarchive, chrom, pos, trackname, verbose = False):
         float: calculated score or 0.0, whichever is greater
     '''
 
-    scaled_l_flank, scaled_r_flank = _calc_flanks(genome, chrom, pos)
+    scaled_l_flank, scaled_r_flank = _calc_flanks(chrom, pos, trackname)
 
-    n_i = gdarchive[chrom][pos, trackname]
+    n_i = chrom[pos, trackname]
 
-    score_deom = 0.5 * ((scaled_l_flank / SUM_SCALES) + \
+    score_denom = 0.5 * ((scaled_l_flank / SUM_SCALES) + \
                         (scaled_r_flank / SUM_SCALES))
 
     score = 1.0 - (n_i / score_denom)

@@ -15,6 +15,8 @@ __author__ = 'Jay Hesselberth <jay.hesselberth@gmail.com>'
 import sys
 
 from genomedata import Genome
+from numpy import isnan
+
 from .signal_scores import scoreA, scoreB, scoreC
 
 __all__ = ['process_signals']
@@ -39,13 +41,16 @@ def process_signals(gdarchive, trackname, score_type, verbose = False):
     with Genome(gdarchive) as genome:
 
         for chrom in genome:
-            for contig, continuous in chrom.itercontinuous():
-               
-                import pdb; pdb.set_trace()
+            for pos in range(chrom.start, chrom.end):
 
-                score = score_func(genome, chrom, pos, trackname, verbose)
+                if isnan(chrom[pos, trackname]): continue
+
+                score = score_func(chrom, pos, trackname, verbose)
+
+                if not score: continue
+
                 fields = (chrom, pos, pos + 1, score)
-                print(map(str, fields), sep='\t')
+                print(*map(str, fields), sep='\t')
 
 def _score_func(score_type):
     ''' determine scoring function'''

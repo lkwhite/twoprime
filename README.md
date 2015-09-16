@@ -6,3 +6,6 @@ modifications in RNA.
 ## requirements
 - genomedata
 - numpy
+
+## TODO
+- incorporate adaptor trimming into pipeline (using `cutadapt`)

@@ -14,10 +14,10 @@ rule align:
         'alignment/{sample}/{sample}.bam'
     params:
         sample = '{sample}',
-        job_name = '{sample}.align'
+        job_name = 'align.{sample}'
     threads: 8
     log: 
-        'logs/align.{sample}.log'
+        'logs/{sample}/align.log'
     shell:
         "bowtie2 --local -x {BOWTIEIDX} -U {input} -p {threads} "
         "| samtools view -F4 -bhu - "
@@ -34,26 +34,15 @@ rule end_coverage:
         chromsize = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.chrom.sizes',
         side_arg = lambda wildcards: SIDES[wildcards.side],
         strand_arg = lambda wildcards: STRANDS[wildcards.strand],
-        job_name = '{sample}.{side}.{strand}.coverage',
+        job_name = 'coverage.{sample}.{side}.{strand}',
 #         scale = scale_factor,
         doc = "determine coverage of 5p and 3p ends, for each strand"
     log: 
-        'logs/coverage.{sample}.log'
+        'logs/{sample}/coverage.log'
     shell:
         "bedtools genomecov -ibam {input} -g {params.chromsize} -bg "
         "{params.strand_arg} {params.side_arg} "
         "| gzip -c > {output}"
-
-
-rule make_bigwigs:
-    input:
-        'coverage/{sample}.{strand}.combined.bg.gz'
-    output:
-        'coverage/{sample}.{strand}.score{score}.bw'
-    params:
-        chromsize = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.chrom.sizes',
-    shell:
-        "bedGraphToBigWig {input} {params.chromsize} {output}"
 
 
 def merge_coverage_input(wildcards):
@@ -68,12 +57,27 @@ rule merge_coverage:
     output:
         'coverage/{sample}/{sample}.combined.{strand}.bg.gz'
     params:
-        job_name = '{sample}.{strand}.merge_coverage',
+        job_name = 'merge_coverage.{sample}.{strand}',
         doc = "combine coverage of ends into a merged bedgraph file"
     shell:
         "bedtools unionbedg -i {input} "
         "| awk '{{print $1, $2, $3, $4 + $5}}' "
         "| gzip -c > {output}"
 
+
+rule coverage_bigwigs:
+    input:
+        'coverage/{sample}/{sample}.combined.{strand}.bg.gz'
+    output:
+        temp('coverage/{sample}/{sample}.{strand}.bg'),
+        'coverage/{sample}/{sample}.{strand}.bw'
+    params:
+        tempfile = 'coverage/{sample}/{sample}.{strand}.bg',
+        job_name = 'coverage.bigwig.{sample}.{strand}',
+    log:
+        'log/{sample}/coverage.bigwig.{strand}.log'
+    shell:
+        "zcat {input} > {params.tempfile}; "
+        "bedGraphToBigWig {params.tempfile} {CHROMSIZE} {output[1]}"
 
 

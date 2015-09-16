@@ -9,12 +9,19 @@ def genomedata_filespec(empty):
     return filespec
 
 
-def genomedata_trackspec(empty):
-    ''' generate a trackname spec for genomedata-load '''
+def genomedata_tracknames(empty):
+    ''' generate tracknames for genomedata '''
     trackbase = '{sample}.{strand}'
 
     tracknames = [trackbase.format(sample = sample, strand = strand)
                   for sample in config['samples'] for strand in STRANDS]
+
+    return tracknames
+
+def genomedata_trackspec(empty):
+    ''' generate a trackname spec for genomedata-load '''
+    
+    tracknames = genomedata_tracknames(empty)
 
     filenames = genomedata_filespec(empty)
 

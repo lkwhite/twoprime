@@ -2,13 +2,13 @@
 ''' rules to download and process SRA files '''
 
 # XXX uncomment for download jobs to run on head node 
-# localrules: download_sra
+localrules: download_sra
 
 rule download_sra:
     output:
        'raw/{sample}.sra'
     log: 
-        'logs/download_sra.{sample}.log'
+        'logs/{sample}/download_sra.{sample}.log'
     params:
         job_name = '{sample}.fastq',
         url = config['urls'] 
@@ -22,7 +22,7 @@ rule sra_to_fastq:
     output:
         'raw/{sample}.fastq.gz'
     log: 
-        'logs/fastq.{sample}.log'
+        'logs/{sample}/fastq.{sample}.log'
     params:
         job_name = '{sample}.fastq'
     shell:

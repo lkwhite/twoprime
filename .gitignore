@@ -1,5 +1,7 @@
 *.pyc
 _build
+build
+dist
 _test
 *.html
 *.swp

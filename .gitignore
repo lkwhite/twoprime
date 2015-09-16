@@ -10,3 +10,4 @@ _test
 .Rproj.user
 results-*/
 *.egg-info
+log/

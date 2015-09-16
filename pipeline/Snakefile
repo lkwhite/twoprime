@@ -16,22 +16,20 @@ FASTA = config['FASTA']
 BOWTIEIDX = config['BOWTIEIDX'] 
 CHROMSIZE = config['CHROMSIZE']
 
-# default config file
-# configfile: '../../test/config.yml'
-
 rule all:
     input:
         expand('coverage/{sample}/{sample}.{side}.{strand}.bg.gz',
                sample=config['samples'], strand=STRANDS, side=SIDES),
         expand('coverage/{sample}/{sample}.{strand}.bw',
                sample=config['samples'], strand=STRANDS),
-        expand('scores/{sample}.{strand}.score{score}.bg.gz',
+        expand('scores/{sample}/{sample}.{strand}.score{score}.bg.gz',
                sample=config['samples'], strand=STRANDS, score=SCORES),
-        expand('scores/{sample}.{strand}.score{score}.bw', 
+        expand('scores/{sample}/{sample}.{strand}.score{score}.bw', 
                sample=config['samples'], strand=STRANDS, score=SCORES)
 
 include: 'rules/fastq.snake'
 include: 'rules/coverage.snake'
 include: 'rules/genomedata.snake'
 include: 'rules/scores.snake'
+# include: 'rules/hub.snake'
 

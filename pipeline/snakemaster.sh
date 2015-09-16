@@ -7,4 +7,4 @@
 set -o nounset -o pipefail -o errexit -x
 
 args=' -q normal -n {threads} -o {log}.out -e {log}.err -J {params.job_name}'
-snakemake --drmaa "$args" --jobs 32 --configfile ../test/config.yml
+snakemake --drmaa "$args" --jobs 32 --configfile ribometh-seq-config.yml

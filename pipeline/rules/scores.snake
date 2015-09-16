@@ -3,7 +3,7 @@ rule process_signals:
     input:
         'genomedata/all.genomedata'
     output:
-        'scores/{sample}.{strand}.score{score}.bg.gz'
+        'scores/{sample}/{sample}.{strand}.score{score}.bg.gz'
     params:
         sample = lambda wildcards: wildcards.sample,
         strand = lambda wildcards: wildcards.strand,
@@ -12,7 +12,7 @@ rule process_signals:
             wildcards.sample + '.' + wildcards.strand,
         job_name = 'proc_signals.{sample}.{strand}.{score}'
     log:
-        'logs/{sample}/proc_signals.{strand}.log'
+        'logs/{sample}/proc_signals.{strand}.{score}.log'
     shell:
         "twoprime-process-signals {input} "
         "--trackname {params.sample}.{params.strand} "
@@ -20,15 +20,15 @@ rule process_signals:
 
 rule signal_bigwigs:
     input:
-        'scores/{sample}.{strand}.score{score}.bg.gz'
+        'scores/{sample}/{sample}.{strand}.score{score}.bg.gz'
     output:
-        temp('scores/{sample}.{strand}.{score}.bg'),
-        'scores/{sample}.{strand}.score{score}.bw'
+        temp('scores/{sample}/{sample}.{strand}.{score}.bg'),
+        'scores/{sample}/{sample}.{strand}.score{score}.bw'
     params:
-        tempfile = 'scores/{sample}.{strand}.{score}.bg',
+        tempfile = 'scores/{sample}/{sample}.{strand}.{score}.bg',
         job_name = 'coverage.bigwig.{sample}.{strand}',
     log:
-        'log/{sample}/scores.bigwig.{strand}.{score}.log'
+        'logs/{sample}/scores.bigwig.{strand}.{score}.log'
     shell:
         "zcat {input} > {params.tempfile}; "
         "bedGraphToBigWig {params.tempfile} {CHROMSIZE} {output[1]}"

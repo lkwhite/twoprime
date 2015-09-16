@@ -1,12 +1,6 @@
 
 ''' rules for alignment and coverage generation '''
 
-#def scale_factor(wildcards):
-#    ''' parse the alignment log to get the number aligned reads '''
-#    align_log = 'logs/align.%s.log.err' % wildcards['sample']
-#    with open(align_log) as logfile:
-#        print 'blah'
-
 rule align:
     input:
         'raw/{sample}.fastq.gz'
@@ -25,22 +19,40 @@ rule align:
         "> {output} && samtools index {output}"
 
 
+#def scale_factor(wildcards):
+#    ''' parse the alignment log to get the number aligned reads. assumes
+#    bowtie2 log format.
+#    
+#    Returns:
+#        scale_factor(float)
+#    '''
+#    align_log = 'logs/{sample}/align.log.err'.format(sample=wildcards['sample'])
+#    with open(align_log) as logfile:
+#        for line in logfile:
+#            if 'of these' in line:
+#                num_reads = float(line.split()[0])
+#            elif 'overall' in line:
+#                rate = float(line.split()[0].replace('%','')) / 100
+#
+#    return num_reads * rate / 1e6
+#
+
 rule end_coverage:
     input:
         'alignment/{sample}/{sample}.bam'
     output:
         'coverage/{sample}/{sample}.{side}.{strand}.bg.gz'
     params:
-        chromsize = '/vol3/home/jhessel/ref/genomes/sacCer1/sacCer1.chrom.sizes',
         side_arg = lambda wildcards: SIDES[wildcards.side],
         strand_arg = lambda wildcards: STRANDS[wildcards.strand],
         job_name = 'coverage.{sample}.{side}.{strand}',
-#         scale = scale_factor,
+#        scale_factor = scale_factor,
         doc = "determine coverage of 5p and 3p ends, for each strand"
     log: 
         'logs/{sample}/coverage.log'
     shell:
-        "bedtools genomecov -ibam {input} -g {params.chromsize} -bg "
+        "bedtools genomecov -ibam {input} -g {CHROMSIZE} -bg "
+#        "-scale {params.scale_factor} "
         "{params.strand_arg} {params.side_arg} "
         "| gzip -c > {output}"
 
@@ -75,7 +87,7 @@ rule coverage_bigwigs:
         tempfile = 'coverage/{sample}/{sample}.{strand}.bg',
         job_name = 'coverage.bigwig.{sample}.{strand}',
     log:
-        'log/{sample}/coverage.bigwig.{strand}.log'
+        'logs/{sample}/coverage.bigwig.{strand}.log'
     shell:
         "zcat {input} > {params.tempfile}; "
         "bedGraphToBigWig {params.tempfile} {CHROMSIZE} {output[1]}"

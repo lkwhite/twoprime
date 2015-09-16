@@ -1,22 +1,24 @@
+genomes_stanza = '''
+'''
 
-rule genomes_file:
+rule make_genomes:
     output:
         'hub/genomes.txt'
+    shell:
 
-rule hub_file:
+rule make_hub:
     output:
         'hub/hub.txt'
 
-rule make_signals:
-    output:
-        'hub/signals/trackDb.txt'
-
-rule make_scores:
+rule make_trackdb:
     output:
         'hub/scores/trackDb.txt'
 
+# XXX should make this url based instead of file based
 rule check_hub:
+    input:
+        'hub/hub.txt'
     output:
         'hub/hubCheck.txt'
     shell:
-        'hubCheck -verbose=2 {params.url}
+        'hubCheck -verbose=2 {input}

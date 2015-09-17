@@ -185,6 +185,8 @@ def scoreC(chrom, pos, trackname, verbose = False):
     score_denom = 0.5 * ((scaled_l_flank / SUM_SCALES) + \
                         (scaled_r_flank / SUM_SCALES))
 
+    if not score_denom: return None
+
     score = 1.0 - (n_i / score_denom)
 
     return max(score, 0.0)

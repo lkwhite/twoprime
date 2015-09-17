@@ -7,7 +7,6 @@ from datetime import date
 today = date.today().isoformat()
 workdir: 'results-twoprime/%s' % today
 
-# STRANDS and SIDES for the coverage rules
 STRANDS = {'pos':'-strand +', 'neg':'-strand -'}
 SIDES = {'5p':'-5', '3p':'-3'}
 SCORES = ('A','B','C')
@@ -15,6 +14,12 @@ SCORES = ('A','B','C')
 FASTA = config['FASTA'] 
 BOWTIEIDX = config['BOWTIEIDX'] 
 CHROMSIZE = config['CHROMSIZE']
+
+from collections import namedtuple
+sample_info = namedtuple('sample_info', ['description', 'url'])
+SAMPLE_INFO = {id:sample_info(description, url) for id, description, url in 
+               zip(config['samples'], config['descriptions'],
+               config['urls'])}
 
 rule all:
     input:

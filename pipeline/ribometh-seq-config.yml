@@ -4,6 +4,12 @@ descrip:  Samples from RiboMeth-seq study
 
 # note samples, descriptions and urls appear in order
 
+# XXX note that SRR1158616 and SRR1158617 could be combined but need to
+# figure out how to specify that in the yaml
+
+# XXX should really use the GSM id's instead of SRR ids as many SRR can be
+# assigned to the same GSM
+
 samples:
     - SRR1158613
     - SRR1158615
@@ -15,8 +21,7 @@ descriptions:
     - Large ribosomal subunit RNA
     - Small ribosomal subunit RNA
     - carries a plasmid encoded artificial snoRNA targeting LSU-U2954
-    - carries a plasmid harboring the entire snR67-snR53 region with a
-      single substitution that blocks methylation at LSU-G2619
+    - carries a plasmid harboring the entire snR67-snR53 region with a single substitution that blocks methylation at LSU-G2619
     - Chromatin associated RNA
 
 urls:

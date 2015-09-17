@@ -2,7 +2,7 @@
 ''' rules to download and process SRA files '''
 
 # XXX uncomment for download jobs to run on head node 
-localrules: download_sra
+# localrules: download_sra
 
 rule download_sra:
     output:
@@ -11,7 +11,7 @@ rule download_sra:
         'logs/{sample}/download_sra.{sample}.log'
     params:
         job_name = '{sample}.fastq',
-        url = config['urls'] 
+        url = lambda wildcards: SAMPLE_INFO[wildcards.sample].url
     shell:
         'wget -nv -o {log} -O {output} {params.url}'
 

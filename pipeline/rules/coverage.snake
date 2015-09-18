@@ -54,6 +54,7 @@ rule end_coverage:
         "bedtools genomecov -ibam {input} -g {CHROMSIZE} -bg "
 #        "-scale {params.scale_factor} "
         "{params.strand_arg} {params.side_arg} "
+        "| bedtools sort -i - "
         "| gzip -c > {output}"
 
 
@@ -74,6 +75,7 @@ rule merge_coverage:
     shell:
         "bedtools unionbedg -i {input} "
         "| awk '{{print $1, $2, $3, $4 + $5}}' "
+        "| bedtools sort -i - "
         "| gzip -c > {output}"
 
 

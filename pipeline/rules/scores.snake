@@ -16,7 +16,8 @@ rule process_signals:
     shell:
         "twoprime-process-signals {input} "
         "--trackname {params.sample}.{params.strand} "
-        "--score {params.score} | gzip -c > {output}"
+        "--score {params.score} "
+        "| bedtools sort -i - | gzip -c > {output}"
 
 rule signal_bigwigs:
     input:

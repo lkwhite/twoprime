@@ -8,6 +8,7 @@ _test
 *.swo
 .snakemake
 .Rproj.user
+.Rhistory
 results-*/
 *.egg-info
 log/

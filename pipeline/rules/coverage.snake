@@ -74,7 +74,7 @@ rule merge_coverage:
         doc = "combine coverage of ends into a merged bedgraph file"
     shell:
         "bedtools unionbedg -i {input} "
-        "| awk '{{print $1, $2, $3, $4 + $5}}' "
+        "| awk -v OFS="\t" '{{print $1, $2, $3, $4 + $5}}' "
         "| bedtools sort -i - "
         "| gzip -c > {output}"
 

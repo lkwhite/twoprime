@@ -1,6 +1,31 @@
 twoprime-seq protocol
 =====================
 
+This protocol is loosely based on RiboMeth-seq, described in PMID XXX. The
+goal is to identify sites of RNA 2'-OH modification. Phosphate
+modifications are further distinguished from other types of modification
+by treatment with Tpt1, which removes 2'-PO4 groups and renders those
+positions labile to alkali
+
+References
+~~~~~~~~~~
+
+#. Thermostable group II intron reverse transcriptase fusion proteins and their
+   use in cDNA synthesis and next-generation RNA sequencing.  Mohr S, Ghanem E,
+   Smith W, Sheeter D, Qin Y, King O, Polioudakis D, Iyer VR, Hunicke-Smith S,
+   Swamy S, Kuersten S, Lambowitz AM.  RNA. 2013 Jul;19(7):958-70. doi:
+   10.1261/rna.039743.113. Epub 2013 May 22.  PMID: 23697550 
+
+#. Profiling of ribose methylations in RNA by high-throughput sequencing.
+   Birkedal U, Christensen-Dalsgaard M, Krogh N, Sabarinathan R, Gorodkin J,
+   Nielsen H.  Angew Chem Int Ed Engl. 2015 Jan 7;54(2):451-5. doi:
+   10.1002/anie.201408362. Epub 2014 Nov 21.  PMID: 25417815 
+
+Protocol
+~~~~~~~~
+
+.. sectnum::
+
 Preparing RNA
 -------------
 RNA prepared from log-phase cultures of yeast grown at 30C in YEPD.
@@ -15,10 +40,10 @@ minutes. Precipitated with NaOAc.
 
 Quantitation: XXX
 
-Removal of 2-prime groups
--------------------------
+Removal of 2-prime phosphate groups
+-----------------------------------
 
-Buffer (10X):
+**Tpt1 Buffer(10X)**
 200 mM Tris-HCl (pH 7.5)
 50 mM MgCl2
 1 mM DTT
@@ -26,7 +51,7 @@ Buffer (10X):
 100 mM NAD+
 
 - Treat 10 micrograms of RNA in 1X Tpt1 buffer with 1 uM Tpt1 for 1 hour at
-  30C.
+  30 C.
 
 - P:C:I extract and resuspend in H2O
 
@@ -49,23 +74,24 @@ Alkaline hydrolysis
 Removal of 3-prime phosphate groups
 -----------------------------------
 
+**DCP buffer (5X)**
+500 mM MES-NaOH pH 5.5
+50 mM MgCL2
+50 mM B-ME
+1.5 M NaCl
+
 Products of alkaline hydrolysis have 3-prime phosphate termini that must
 be removed prior to the TGIRT-seq step (see PMID XXX).
-
-Buffer (10X):
-1 M Tris-acetate (pH 6.0)
-100 mM MgCl2
-20 mM DTT
 
   =============== ==============
   RNA (10 ug)     10 ug        
   H2O             X uL
-  10 X buffer     2 uL
+  5X buffer       2 uL
   T4 PNK (10 U)   2 uL
                   ----
                   10 uL
 
-Incubate for 1 hour at 22 C.
+Incubate for 6 hours at 37 C.
 
 Gel purification
 ----------------

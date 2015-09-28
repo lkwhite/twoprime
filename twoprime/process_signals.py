@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-from __future__ import absolute_import, print_function
-
 '''process_signals.py
 
 Process signals from twoprime-seq using different scoring schemes.
@@ -9,15 +7,17 @@ Process signals from twoprime-seq using different scoring schemes.
 Signal must first be loaded in genomedata format
 '''
 
-__author__ = 'Jay Hesselberth <jay.hesselberth@gmail.com>'
-
+from __future__ import absolute_import, print_function
 
 import sys
+from argparse import ArgumentParser
 
 from genomedata import Genome
 from numpy import isnan
 
 from .signal_scores import scoreA, scoreB, scoreC
+
+__author__ = 'Jay Hesselberth <jay.hesselberth@gmail.com>'
 
 __all__ = ['process_signals']
 
@@ -52,9 +52,10 @@ def process_signals(gdarchive, trackname, score_type, verbose = False):
                 fields = (chrom, pos, pos + 1, score)
                 print(*map(str, fields), sep='\t')
 
+
 def _score_func(score_type):
     ''' determine scoring function'''
-    
+
     if score_type == 'A':
         return scoreA
     elif score_type == 'B':
@@ -62,12 +63,10 @@ def _score_func(score_type):
     elif score_type == 'C':
         return scoreC
     else:
-        raise ValueError, "Unknown score type: %s" % score_type
+        raise ValueError("Unknown score type: %s" % score_type)
 
 
 def parse_args(args):
-
-    from argparse import ArgumentParser
 
     parser = ArgumentParser()
 
@@ -85,15 +84,12 @@ def parse_args(args):
 
     return args
 
-def main(args=sys.argv[1:]):
+def main(argv=sys.argv[1:]):
 
-    args = parse_args(args)
+    args = parse_args(argv)
 
-    kwargs = {'trackname':args.trackname,
-              'score_type':args.score_type,
-              'verbose':args.verbose}
-
-    return process_signals(args.gdarchive, **kwargs)
+    return process_signals(args.gdarchive, args.trackname,
+                           args.score_type, args.verbose)
 
 if  __name__ == '__main__':
     sys.exit(main())

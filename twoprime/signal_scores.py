@@ -1,20 +1,20 @@
 #! /usr/bin/env python
 
-from __future__ import absolute_import, print_function
-
 '''signal_scores.py
 
-scores based on RiboMeth-seq supplementary info described in 
+scores based on RiboMeth-seq supplementary info described in
 
     Profiling of Ribose Methylations in RNA by High-Throughput
     Sequencing (2015) Angewandte Chemie. Birkedal *et al.*
 
 '''
 
-__author__ = 'Jay Hesselberth <jay.hesselberth@gmail.com>'
-__license__ = 'MIT'
+from __future__ import absolute_import, print_function
 
 from numpy import nanmean, nanstd, nansum, nan_to_num, isnan
+
+__author__ = 'Jay Hesselberth <jay.hesselberth@gmail.com>'
+__license__ = 'MIT'
 
 # default from Birkedal et al. paper
 FLANK_SIZE = 6
@@ -39,15 +39,15 @@ def scoreA(chrom, pos, trackname, verbose = False):
     .. math::
 
         S_i = max \begin{cases}
-                  1 - \frac{2n_i + 1}  
-                           {\frac{1}{2} |\mu_l - \sigma_l| + n_i 
+                  1 - \frac{2n_i + 1}
+                           {\frac{1}{2} |\mu_l - \sigma_l| + n_i
                             + \frac{1}{2} |\mu_r - \sigma_r| + 1}
-                  \\ 
+                  \\
                   0
                   \end{cases}
 
     Args:
-        chrom (genomedata.Chromosome): specified chromosome 
+        chrom (genomedata.Chromosome): specified chromosome
         pos (int): queried postition
         trackname (str): name of signal track
         verbose (Optional[bool]): maximum verbosity
@@ -84,7 +84,7 @@ def _calc_flanks(chrom, pos, trackname):
     calculate scaled flanks for scoreB and scoreC.
 
     Args:
-        chrom (genomedata.Chromosome): specified chromosome 
+        chrom (genomedata.Chromosome): specified chromosome
         pos (int): queried postition
         trackname (str): name of signal track
 
@@ -123,7 +123,7 @@ def scoreB(chrom, pos, trackname, verbose = False):
                    {n_i + 1}
 
     Args:
-        chrom (genomedata.Chromosome): specific chromosome 
+        chrom (genomedata.Chromosome): specific chromosome
         pos (int): queried postition
         trackname (str): name of signal track
         verbose (Optional[bool]): maximum verbosity
@@ -139,7 +139,7 @@ def scoreB(chrom, pos, trackname, verbose = False):
     score_numer = abs(n_i - 0.5 * (scaled_l_flank / SUM_SCALES) + \
                                   (scaled_r_flank / SUM_SCALES))
     score_denom = n_i + 1.0
-   
+
     score = score_numer / score_denom
 
     return score
@@ -156,7 +156,7 @@ def scoreC(chrom, pos, trackname, verbose = False):
     .. math::
 
         S_i = max \begin{cases}
-                  1 - 
+                  1 -
                   \frac{n_i}{
                   \frac{1}{2}
                   \left(\frac{\sum_{j=i-\delta}^{i-1} \omega_j n_j}
@@ -164,12 +164,12 @@ def scoreC(chrom, pos, trackname, verbose = False):
                         \frac{\sum_{j=i+1}^{i+\delta} \omega_j n_j}
                                       {\sum_{j=i+1}^{i+\delta} \omega_j}
                   \right)}
-                  \\ 
+                  \\
                   0
                   \end{cases}
 
     Args:
-        chrom (genomeata.Chromosome): specified chromosome 
+        chrom (genomeata.Chromosome): specified chromosome
         pos (int): queried postition
         trackname (str): name of signal track
         verbose (Optional[bool]): maximum verbosity

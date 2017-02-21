@@ -10,12 +10,12 @@ rule align:
         sample = '{sample}',
         job_name = 'align.{sample}'
     threads: 8
-    log: 
+    log:
         'logs/{sample}/align.log'
     shell:
         "bowtie2 --local -x {BOWTIEIDX} -U {input} -p {threads} "
         "| samtools view -F4 -bhu - "
-        "| samtools sort -o - alignment/{params.sample}.temp -m 8G "
+        "| samtools sort - "
         "> {output} && samtools index {output}"
 
 
@@ -48,7 +48,7 @@ rule end_coverage:
         job_name = 'coverage.{sample}.{side}.{strand}',
 #        scale_factor = scale_factor,
         doc = "determine coverage of 5p and 3p ends, for each strand"
-    log: 
+    log:
         'logs/{sample}/coverage.log'
     shell:
         "bedtools genomecov -ibam {input} -g {CHROMSIZE} -bg "
